@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useRouter } from 'next/router';
 
 import {
   Box,
@@ -11,9 +12,11 @@ import {
   TextField,
   Unstable_Grid2 as Grid
 } from '@mui/material';
-import { borderRadius } from '@mui/system';
+import QRCode from 'react-qr-code';
 
 export const AccountProfileDetails = () => {
+  const router = useRouter();
+
   const [values, setValues] = useState({
     firstName: 'Printer',
     lastName: 'Hardware',
@@ -22,8 +25,6 @@ export const AccountProfileDetails = () => {
     state: 'los-angeles',
     country: 'USA'
   });
-
-
   const handleChange = useCallback(
     (event) => {
       setValues((prevState) => ({
@@ -34,7 +35,6 @@ export const AccountProfileDetails = () => {
     },
     []
   );
-
   const [data, setData]=useState({
     set_mms_code:"",
     set_category:"",
@@ -55,38 +55,71 @@ export const AccountProfileDetails = () => {
     set_IsAssetInStore:""
 
   })
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    
-    // http://100.65.0.12:13258/api/Asset
-    const url ="http://100.65.0.12:13258/api/Asset"
-    
-    fetch (url,{
-      method: 'POST',
-      headers:{
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-      },
-      body:JSON.stringify(data)
-      })
-      
-      .then(response =>{
-      console.log("response=", response)
-      
-      if(response.state ==200){
-      alert("success");
+    try {
+      // as api is not working
+      // const response = await fetch(url, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     // 'Access-Control-Allow-Origin': '*' // Remove this line
+      //   },
+      //   body: JSON.stringify(data)
+      // });
+  
+      const response=await sendMockData();
+      console.log("response =", response);
+  
+      if (response.status === 200) {
+        const responseData = await response.json(); // assuming the response is JSON
+        alert("Success");
+        console.log("Data =", responseData);
+        router.push("/listAsset")
+      } else {
+        throw new Error('Failed to submit');
       }
-      }).catch(e =>{
-      console.log("Error=",e);
-      })
-    
-      }
+    } catch (error) {
+      console.error("Error =", error);
+      alert("Error: " + error.message);
+    }
+  }
+  
+  const sendMockData=async ()=>{
+    const data={
+    UniqueAssetID: "205",
+	MMSCode: "1295",
+	Category: "LCD",
+	DeviceCategory: "TEST5",
+	DeviceSubCategory: "123",
+	Brand: "11",
+	AssetName: "237",
+	Make: "120",
+	Model: "TEST1",
+	AssetDescription: "TEST2",
+	UOM: "TEST21",
+	AssetSerialNumber: "TEST22",
+	QC_Status: "TEST23",
+	QC_Remarks: "TEST24",
+	QC_DoneBy: "Prashant",
+	QC_DoneDate: "10-10-2023",
+	PresentLocationOfAsset: "Canteen Store",
+	IsAssetInStore: "1"
+    }
+    return new Promise((resolve, reject)=>{
+      setTimeout(()=>{
+        resolve({status:200,json:()=>Promise.resolve(data)})
+      },2000)
+    })
+  }
+
+
  
  
   return (
     <form onSubmit={handleSubmit}>
+      <div className='d-flex flex-column'>
+        <h1>Create Asset</h1>
       <Card>
         {/* <CardHeader
         
@@ -415,60 +448,14 @@ export const AccountProfileDetails = () => {
                   // value={values.phone}
                 />
               </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
-              <Grid
-                xs={12}
-                md={6}
-              ></Grid>
-             
-              <button className='btn' 
-        style={{ color: "black",height
-        :"30px",borderRadius:"5px",fontSize:"20px",border:"none",fontWeight:"bold",}}>
+              <div className='d-flex flex-column align-items-center ' >
+              <button className='btn btn-primary' 
+        style={{ color: "#111927", backgroundColor:"rgb(99, 102, 241)",height
+        :"40px", width:"200px", margin:'18px',borderRadius:"3px",fontSize:"20px",border:"none"}}>
         Submit
 
         </button>
-
-             
-                <Grid
-                xs={12}
-                md={6}
-              ></Grid>
-                {/* <TextField
-                  fullWidth
-                  label="Country"
-                  name="country"
-                  onChange={handleChange}
-                  required
-                  value={values.country}
-                />
-              </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              > */}
-                {/* <TextField
-                  fullWidth
-                  label="Is Asset In Store"
-                  name="set_IsAssetInStore"
-                  onChange={handleChange}
-                  required
-                  select
-                  SelectProps={{ native: true }}
-                  value={values.state}
-                >
-                  {states.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </TextField> */}
-              </Grid>
+        </div>
             </Grid>
           </Box>
         </CardContent>
@@ -486,6 +473,7 @@ export const AccountProfileDetails = () => {
         </center> */}
         </CardActions>
       </Card>
+      </div>
     </form>
   );
 };

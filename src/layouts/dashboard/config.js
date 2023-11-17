@@ -30,6 +30,16 @@ export const items = [
   },
   {
 
+    title: 'Asset Details',
+    path: '/listAsset',
+    icon: (
+      <SvgIcon fontSize="small">
+        <UsersIcon />
+      </SvgIcon>
+    )
+  },
+  {
+
     title: 'Return Asset',
     path: '/',
     icon: (
