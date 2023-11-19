@@ -21,6 +21,7 @@ export const AccountProfileDetails = () => {
 
   const [isQRVisible, setQRVisible] = useState(false);
   const [assetId, setAssetId] = useState("");
+  const [qrTitle, setQRTitle] = useState("");
   const [errorData, setErrorData] = useState(false);
   const [data, setData] = useState({
     set_mms_code: "",
@@ -60,6 +61,8 @@ export const AccountProfileDetails = () => {
         console.log("Data =", responseData);
 
         if (responseData?.UniqueAssetID) {
+          const concatenatedString = `MMS CODE:${responseData?.MMSCode},CATEGORY:${responseData?.Category},QC STATUS:${responseData?.QC_Status},QC DONE BY:${responseData?.QC_DoneBy}`;
+          setQRTitle(concatenatedString);
           setAssetId(responseData?.UniqueAssetID);
           setQRVisible(true);
         } else {
@@ -158,7 +161,7 @@ export const AccountProfileDetails = () => {
             }}
           >
             <h1>Generated QR</h1>
-            <QRCode value={assetId} size={300} />
+            <QRCode value={assetId} title={qrTitle} size={300} />
             <div style={{ display: "flex", flexDirection: "row", gap: "5px" }}>
               <Button
                 onClick={returnToBack}
