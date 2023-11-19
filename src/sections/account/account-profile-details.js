@@ -1,5 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState ,useRef} from 'react';
 import { useRouter } from 'next/router';
+import * as htmlToImage from "html-to-image";
+import download from 'downloadjs'; 
 
 import {
   Box,
@@ -13,9 +15,16 @@ import {
   Unstable_Grid2 as Grid
 } from '@mui/material';
 import QRCode from 'react-qr-code';
+import CircularProgress from '@mui/material/CircularProgress';
 
 export const AccountProfileDetails = () => {
   const router = useRouter();
+  const [isLoading, setLoading] = useState(false);
+
+    const [isQRVisible, setQRVisible]=useState(false)
+    const [assetId,setAssetId]=useState("")
+    const [errorData, setErrorData]=useState(false)
+    const qrCodeRef = useRef(null);
 
   const [values, setValues] = useState({
     firstName: 'Printer',
@@ -58,6 +67,7 @@ export const AccountProfileDetails = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       // as api is not working
       // const response = await fetch(url, {
       //   method: 'POST',
@@ -67,25 +77,36 @@ export const AccountProfileDetails = () => {
       //   },
       //   body: JSON.stringify(data)
       // });
-  
-      const response=await sendMockData();
+
+      // Mock API call
+      const response = await sendMockData();
       console.log("response =", response);
-  
+
       if (response.status === 200) {
-        const responseData = await response.json(); // assuming the response is JSON
-        alert("Success");
+        const responseData = await response.json();
         console.log("Data =", responseData);
-        router.push("/listAsset")
+
+        if (responseData?.UniqueAssetID) {
+          setAssetId(responseData?.UniqueAssetID);
+          setQRVisible(true);
+        } else {
+          setErrorData(true);
+          setQRVisible(true);
+        }
       } else {
         throw new Error('Failed to submit');
       }
     } catch (error) {
       console.error("Error =", error);
       alert("Error: " + error.message);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
   
   const sendMockData=async ()=>{
+    
     const data={
     UniqueAssetID: "205",
 	MMSCode: "1295",
@@ -113,13 +134,51 @@ export const AccountProfileDetails = () => {
     })
   }
 
+  const downloadQRCode = () => {
+    const qrCodeContainer = document.getElementById('qrCodeContainer');
 
+    if (qrCodeContainer) {
+      htmlToImage.toPng(qrCodeContainer)
+        .then((dataUrl) => {
+          // Trigger download
+          download(dataUrl, 'qr-code.png');
+        })
+        .catch((error) => {
+          console.error('Error generating QR code image', error);
+        });
+    }
+  };
  
+  const returnToBack=()=>{
+    setQRVisible(false)
+  }
  
   return (
     <form onSubmit={handleSubmit}>
       <div className='d-flex flex-column'>
-        <h1>Create Asset</h1>
+        
+        {isLoading ? (
+          <div style={{display:'flex' ,justifyContent:'center',alignItems:'center'}}>
+            <div style={{display:'flex' ,flexDirection:'column'}}>
+          <CircularProgress color="inherit" />
+          <h6>Loading</h6>
+          </div>
+          </div>
+        ) :isQRVisible ? (
+          <div id="qrCodeContainer" style={{display:'flex' ,flexDirection:"column",justifyContent:'center',alignItems:'center'}}>
+            <h1>Generated QR</h1>
+        <QRCode value={assetId} size={300} />
+        <div style={{display:'flex' ,flexDirection:"row",gap:'5px'}}>
+        <button onClick={downloadQRCode}  style={{ color: "#111927", backgroundColor:"rgb(99, 102, 241)",height
+        :"40px", width:"200px", margin:'18px',borderRadius:"3px",fontSize:"20px",border:"none"}}>Download QR Code </button>
+        <button onClick={returnToBack}  style={{ color: "#111927", backgroundColor:"rgb(99, 102, 241)",height
+        :"40px", width:"200px", margin:'18px',borderRadius:"3px",fontSize:"20px",border:"none"}}>Back</button>
+        </div>
+        
+        </div>
+      ):(
+        <div>
+          <h1>Create Asset</h1>
       <Card>
         {/* <CardHeader
         
@@ -472,7 +531,8 @@ export const AccountProfileDetails = () => {
         >Submit</button>
         </center> */}
         </CardActions>
-      </Card>
+      </Card></div>)
+}
       </div>
     </form>
   );
