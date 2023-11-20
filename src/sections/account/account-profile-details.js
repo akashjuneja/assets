@@ -42,6 +42,7 @@ export const AccountProfileDetails = () => {
     set_PresentLocationOfAsset: "",
     set_IsAssetInStore: "",
   });
+  const redirectUrl = "https://sms.zims.in:13254/getAssetDetail";
   const handleSubmit = async (e) => {
     const url = "http://100.65.0.12:13258/api/Asset";
     e.preventDefault();
@@ -161,7 +162,7 @@ export const AccountProfileDetails = () => {
             }}
           >
             <h1>Generated QR</h1>
-            <QRCode value={assetId} title={qrTitle} size={300} />
+            <QRCode value={`${redirectUrl}/${assetId}`} title={qrTitle} size={300} />
             <div style={{ display: "flex", flexDirection: "row", gap: "5px" }}>
               <Button
                 onClick={returnToBack}
